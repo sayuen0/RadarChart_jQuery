@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ポケモン種族値レーダーチャート</title>
+</head>
+<body>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js" type="text/javascript"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.bundle.min.js"></script>
+<!-- チャート描画キャンパス -->
+<div><canvas id ="フシギバナ" width="400px" height="400px"></canvas></div>
+
+<script>
+    /**
+     * チャート初期設定
+     */
+    var config = {
+        type:"radar",
+        data:{
+            labels: ["hp","attack","defence","spAttack","spDefence","speed"],
+            datasets:[
+                {
+                    label:"フシギバナ",
+                    // backgroundColor: "lightgreen",
+                    borderColor:'lightgreen',
+                    pointBackgroundColor: 'rgb(100,102,255)',
+                    data:[80,82,83,100,100,80]
+                },
+                {
+                    label:"メガフシギバナ",
+                    borderColor:"green",
+                    pointBackgroundColor:"#20B2AA",
+                    data: [80,100,123,122,120,80]
+                }
+            ,]
+        },
+        options : {
+            animation:false,
+            showTooltips: false,
+            lenged:{position:"bottom"},
+            title:{
+                display:true,
+                fontSize:20,
+                fontColor:"black",
+                text:"ポケモン種族値"
+            },
+            scale:{
+                display:true,
+                pointLabels:{
+                    fontSize:15,
+                    fontColor:"black"
+                },
+                ticks: {
+				display: true,
+				fontSize: 12,
+				fontColor: "green",
+				min: 0,
+                max: 130,
+                opacity:0.2,
+				beginAtZero: true
+                },
+                gridLines: {
+                    display:true,
+                    color:"green",
+                    opacity:0.4
+                }
+            }
+        }
+    };
+
+    var myRadar = new Chart($("#フシギバナ"), config);
+</script>
+</body>
+</html>
