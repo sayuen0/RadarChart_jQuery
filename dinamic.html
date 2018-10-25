@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>メガシンカポケモン能力値比較</title>
+</head>
+
+<body>
+    <div><canvas id="pokemon" width="200px" height="auto" margin="100px"></canvas></div>
+    <select name="" id="select">
+        <option value=""></option>
+    </select>
+    <select name="" id="mega-select" style="display: none"></select>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.bundle.min.js"></script>
+
+    <script type="text/javascript">
+        // データ格納処理　メガシンカするポケモンの、通常形態・メガ形態ごと名前、能力値を格納
+        var pokemons = [];
+        var megaPokemons = [];
+        var names = [];
+        var megaNames = [];
+        var paramsOfEachPokemon = [];
+        var paramsOfEachMegaPokemon = [];
+        $.ajax({
+                type: "GET",
+                url: "pokemon_data.json",
+                dataType: "json"
+            })
+            .then(
+                function (json) { //jsonを読み込んだ時
+                    // console.log("成功");
+                    for (var i in json) {
+                        if (json[i].isMegaEvolution === true &&
+                            json[i].name !== "メガリザードンY" &&
+                            json[i].name !== "メガミュウツーY" &&
+                            json[i].name !== "ネクロズマ") {
+                            //リザードンとミュウツーだけは２通りのメガシンカがあり面倒なので除外, ネクロズマは同名形態変化が多くて面倒なので除外
+                            // メガシンカするとき、その一つ前のインデックスのポケモンを通常種として格納
+                            pokemons.push(json[i - 1]);
+                            megaPokemons.push(json[i]);
+                            names.push(json[i - 1].name);
+                            megaNames.push(json[i].name);
+                            var paramsArray = [];
+                            var megaParamsArray = [];
+                            paramsArray[0] = (json[i - 1].stats.hp);
+                            paramsArray[1] = (json[i - 1].stats.attack);
+                            paramsArray[2] = (json[i - 1].stats.defence);
+                            paramsArray[3] = (json[i - 1].stats.spAttack);
+                            paramsArray[4] = (json[i - 1].stats.spDefence);
+                            paramsArray[5] = (json[i - 1].stats.speed);
+                            paramsOfEachPokemon.push(paramsArray);
+                            megaParamsArray[0] = (json[i].stats.hp);
+                            megaParamsArray[1] = (json[i].stats.attack);
+                            megaParamsArray[2] = (json[i].stats.defence);
+                            megaParamsArray[3] = (json[i].stats.spAttack);
+                            megaParamsArray[4] = (json[i].stats.spDefence);
+                            megaParamsArray[5] = (json[i].stats.speed);
+                            paramsOfEachMegaPokemon.push(megaParamsArray);
+                        }
+                    }
+                    for (var i = 0; i < pokemons.length; i++) {
+                        $("#select").append($("<option>").val(names[i]).text(names[i]));
+                        $("#mega-select").append($("<option>").val(megaNames[i]).text(megaNames[i]));
+                    }
+
+                },
+                function () {
+                    // console.log("失敗")
+                }
+            );
+
+        // UI準備処理
+
+
+        // レーダーチャート　
+        // 初期設定
+        var config = {
+            type: "radar",
+            data: {
+                labels: ["hp", "attack", "defence", "spAttack", "spDefence", "speed"],
+                datasets: [{
+                        label: "通常ポケモン",
+                        // backgroundColor: "lightgreen",
+                        borderColor: 'lightgreen',
+                        pointBackgroundColor: 'rgb(100,102,255)',
+                        data: [0, 0, 0, 0, 0, 0]
+                    },
+                    {
+                        label: "メガシンカポケモン",
+                        borderColor: "green",
+                        pointBackgroundColor: "darkgreen",
+                        data: [0, 0, 0, 0, 0, 0]
+                    },
+                ]
+            },
+            options: {
+                animation: false,
+                showTooltips: false,
+                lenged: {
+                    position: "bottom"
+                },
+                title: {
+                    display: true,
+                    fontSize: 20,
+                    fontColor: "black",
+                    text: "ポケモン種族値"
+                },
+                scale: {
+                    display: true,
+                    pointLabels: {
+                        fontSize: 20,
+                        fontColor: "black"
+                    },
+                    ticks: {
+                        display: false,
+                        fontSize: 12,
+                        fontColor: "green",
+                        min: 0,
+                        opacity: 0.2,
+                        beginAtZero: true
+                    },
+                    gridLines: {
+                        display: true,
+                        color: "green"
+                    }
+                }
+            }
+        };
+        // 初期描画
+        var myRadar = new Chart($("#pokemon"), config);
+        // selectが変更されたとき
+        $("#select").change(function () {
+            // #mega-selectをそれに合わせる
+            function dex() {
+                for (var i = 0; i < names.length; i++) {
+                    if ($("#select").val() === names[i]) {
+                        break;
+                    }
+                }
+                return i;
+            };
+            var index = dex();
+            $("#mega-select").val(megaNames[index]);
+            //名前の変更
+            // var newRadar = new Chart();
+            config.options.scale.ticks.display=true;
+            config.data.datasets[0].label = $(this).val();
+            config.data.datasets[1].label = $("#mega-select").val();
+            config.data.datasets[0].data = paramsOfEachPokemon[index];
+            config.data.datasets[1].data = paramsOfEachMegaPokemon[index];
+            myRadar.update(config);
+        });
+    </script>
+</body>
+
+</html>
